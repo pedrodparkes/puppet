@@ -1,0 +1,24 @@
+---
+# Hiera 5 Global configuration file
+
+version: 5
+
+defaults:  # Used for any hierarchy level that omits these keys.
+  datadir: data         # This path is relative to hiera.yaml's directory.
+  data_hash: yaml_data  # Use the built-in YAML backend.
+
+hierarchy: 
+  - name: "Per-node data"                   # Human-readable name.
+    path: "environments/%{::environment}/hieradata/nodes/%{::fqdn}"
+  - name: "Roles data"                   # Human-readable name.
+    path: "environments/%{::environment}/hieradata/roles/%{::role}"
+  - name: "Hostname data"                   # Human-readable name.
+    path: "environments/%{::environment}/hieradata/bare_hostnames/%{::bare_hostname}"
+  - name: "Region and Domain data"                   # Human-readable name.
+    path: "environments/%{::environment}/hieradata/domains/%{::domain}"
+  - name: "Environment data"                   # Human-readable name.
+    path: "environments/%{::environment}/hieradata/environments/%{::environment}"
+  - name: "Common data"
+    path: "environments/%{::environment}/hieradata/common"
+  - name: "Private Common data"
+    path: "hieradata_private/%{::environment}/common"

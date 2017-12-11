@@ -1,0 +1,88 @@
+# -*- mode: ruby -*-
+VAGRANTFILE_API_VERSION = "2"
+
+unless Vagrant.has_plugin?("vagrant-docker-compose") or Vagrant.has_plugin?("vagrant-vbguest") or Vagrant.has_plugin?("vagrant-hostsupdater")
+  system("vagrant plugin install vagrant-docker-compose")
+  system("vagrant plugin install vagrant-vbguest")
+  system("vagrant plugin install vagrant-hostsupdater")
+  puts "Dependencies installed, please try the command again."
+  exit
+end
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.define "puppet" do |puppet|
+    puppet.vm.box = "centos/7"
+    puppet.vm.provider "virtualbox" do |v|
+      v.name = "puppet"
+      v.memory = 4096
+      v.cpus = 4
+      v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
+    end
+    puppet.ssh.forward_agent = true
+    puppet.vm.boot_timeout = 2400
+    puppet.vm.hostname = "puppet.mc"
+    puppet.vm.network(:private_network, {:ip=>"192.168.56.201"})
+    # puppet.vm.synced_folder "../../op/puppet4/code", "/etc/puppetlabs/code", type: "virtualbox"
+    puppet.vm.synced_folder "./code", "/etc/puppetlabs/code", type: "virtualbox"
+
+    # install puppet5
+    puppet.vm.provision "puppet", type: "shell", inline: <<-SHELL
+      # sudo rpm -Uvh https://yum.puppet.com/puppet5/puppet5-release-el-7.noarch.rpm
+      # sudo rpm -Uvh http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+      # sudo yum install -y mc puppetserver puppet-agent puppet-client-tools net-tools puppetdb puppetdb-termini postgresql postgresql-contrib postgresql-server git python2-pip python-virtualenv
+      # sudo systemctl restart postgresql.service
+      sudo sed -i 's/2g/512M/g' /etc/sysconfig/puppetserver
+      # sudo /opt/puppetlabs/bin/puppet module install puppetlabs-puppetdb
+      # sudo systemctl restart puppetserver
+      # sudo /opt/puppetlabs/bin/puppet agent -t
+      # sudo /opt/puppetlabs/bin/puppetdb ssl-setup
+      # sudo /opt/puppetlabs/bin/puppet resource service puppetdb ensure=running enable=true
+      # sudo systemctl restart puppetserver
+      # sudo /opt/puppetlabs/bin/puppet module install puppetlabs-apache
+      # sudo /opt/puppetlabs/bin/puppet module install puppet-puppetboard
+      # sudo /opt/puppetlabs/bin/puppet agent -t
+      # sudo /usr/sbin/iptables -F
+      sudo echo "reports = store,puppetdb" >> /etc/puppetlabs/puppet/puppet.conf
+      # sudo systemctl restart puppetserver
+      sudo sed -i 's/ENABLE_CATALOG = False/ENABLE_CATALOG = True/g' /srv/puppetboard/puppetboard/settings.py
+      # sudo systemctl restart httpd
+      # sudo /opt/puppetlabs/bin/puppet agent -t
+    SHELL
+  end
+
+  config.vm.define "bastion" do |bastion|
+    bastion.vm.box = "centos/7"
+    bastion.vm.provider "virtualbox" do |v|
+      v.name = "bastion"
+      v.memory = 1024
+      v.cpus = 1
+      v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
+    end
+    bastion.ssh.forward_agent = true
+    bastion.vm.boot_timeout = 2400
+    bastion.vm.hostname = "bastion.mc"
+    bastion.vm.network(:private_network, {:ip=>"192.168.56.202"})
+    # bastion.vm.network(:forwarded_port, {:guest=>8080, :host=>8080})
+    bastion.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    bastion.vm.provision "puppetagent", type: "shell", inline: <<-SHELL
+      sudo echo "192.168.56.201 puppet.mc" >> /etc/hosts
+      # sudo rpm -Uvh https://yum.puppet.com/puppet5/puppet5-release-el-7.noarch.rpm
+      # sudo yum update
+      # sudo yum install -y mc htop puppet-agent net-tools
+      sudo echo "server=puppet.mc" >> /etc/puppetlabs/puppet/puppet.conf
+    SHELL
+  end
+
+end
+
+#
+#[root@puppet puppet]# puppetdb ssl-setup
+#PEM files in /etc/puppetlabs/puppetdb/ssl are missing, we will move them into place for you
+#Copying files: /etc/puppetlabs/puppet/ssl/certs/ca.pem, /etc/puppetlabs/puppet/ssl/private_keys/puppet.usgroup.dev.pem and /etc/puppetlabs/puppet/ssl/certs/puppet.usgroup.dev.pem to /etc/puppetlabs/puppetdb/ssl
+#Setting ssl-host in /etc/puppetlabs/puppetdb/conf.d/jetty.ini already correct.
+#Setting ssl-port in /etc/puppetlabs/puppetdb/conf.d/jetty.ini already correct.
+#Backing up /etc/puppetlabs/puppetdb/conf.d/jetty.ini to /etc/puppetlabs/puppetdb/conf.d/jetty.ini.bak.1512639906 before making changes
+#Updated default settings from package installation for ssl-key in /etc/puppetlabs/puppetdb/conf.d/jetty.ini.
+#Updated default settings from package installation for ssl-cert in /etc/puppetlabs/puppetdb/conf.d/jetty.ini.
+#Updated default settings from package installation for ssl-ca-cert in /etc/puppetlabs/puppetdb/conf.d/jetty.ini.
+#[root@puppet puppet]#

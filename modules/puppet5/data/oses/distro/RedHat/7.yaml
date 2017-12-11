@@ -1,0 +1,4 @@
+puppet5::version: '5.0.0-1.el7'
+puppet5::server_version: '5.0.0-1.el7'
+puppet5::puppetdb_version: '5.0.1-1.el7'
+puppet5::service::systemd_unit: '/usr/lib/systemd/system/puppet.service'

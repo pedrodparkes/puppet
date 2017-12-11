@@ -1,0 +1,50 @@
+puppet5::puppetdb: false
+puppet5::puppetdb_server: "%{::ipaddress}"
+puppet5::puppetdb_port: 8081
+
+puppet5::certname: "%{trusted.certname}"
+puppet5::version: 'installed'
+puppet5::autosign: false
+puppet5::java_args: '-Xms2g -Xmx2g -XX:MaxPermSize=256m'
+
+puppet5::agent_version: 'installed'
+
+puppet5::system_config_path: '/files/etc/sysconfig'
+
+
+puppet5::directories:
+  base:
+    path:   '/etc/puppetlabs'
+  code:
+    path:   "/etc/puppetlabs/code"
+  mcollective:
+    path:   "/etc/puppetlabs/mcollective"
+  puppet:
+    path:   "/etc/puppetlabs/puppet"
+  modules:
+    path:   "/etc/puppetlabs/code/modules"
+  environments:
+    path:   "/etc/puppetlabs/code/environments"
+  ssl:
+    path:   "/etc/puppetlabs/puppet/ssl"
+    mode:   '0771'
+  cert_requests:
+    path:   "/etc/puppetlabs/puppet/ssl/certificate_requests"
+  certs:
+    path:   "/etc/puppetlabs/puppet/ssl/certs"
+  private_certs:
+    path:   "/etc/puppetlabs/puppet/ssl/private"
+    mode:   '0750'
+  private_keys:
+    path:   "/etc/puppetlabs/puppet/ssl/private_keys"
+    mode:   '0750'
+  public_keys:
+    path:   "/etc/puppetlabs/puppet/ssl/public_keys"
+  pxp-agent:
+    path:   "/etc/puppetlabs/pxp-agent"
+  pxp_modules:
+    path:   "/etc/puppetlabs/pxp-agent/modules"
+
+puppet5::files:
+  puppetconf:
+    path: "/etc/puppetlabs/puppet/puppet.conf"

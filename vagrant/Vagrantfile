@@ -1,0 +1,56 @@
+# -*- mode: ruby -*-
+VAGRANTFILE_API_VERSION = "2"
+
+unless Vagrant.has_plugin?("vagrant-docker-compose") or Vagrant.has_plugin?("vagrant-vbguest") or Vagrant.has_plugin?("vagrant-hostsupdater")
+  system("vagrant plugin install vagrant-docker-compose")
+  system("vagrant plugin install vagrant-vbguest")
+  system("vagrant plugin install vagrant-hostsupdater")
+  puts "Dependencies installed, please try the command again."
+  exit
+end
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  config.vm.define "puppet" do |puppet|
+    puppet.vm.box = "ubuntu/xenial64"
+    puppet.vm.provider "virtualbox" do |v|
+      v.name = "puppet"
+      v.memory = 4096
+      v.cpus = 4
+      v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
+    end
+    puppet.ssh.forward_agent = true
+    puppet.vm.boot_timeout = 2400
+    puppet.vm.hostname = "puppet.mc"
+    puppet.vm.network(:private_network, {:ip=>"192.168.56.201"})
+    # puppet.vm.synced_folder "../../op/puppet4/code", "/etc/puppetlabs/code", type: "virtualbox"
+    puppet.vm.synced_folder "../", "/etc/puppetlabs/code/environments/dev/"
+    puppet.vm.synced_folder "../keys/", "/tmp/keys/"
+
+    # install puppet master
+    puppet.vm.provision "puppet", type: "shell", inline: <<-SHELL
+      bash /etc/puppetlabs/code/environments/dev/vagrant/bootstrap/puppet.sh
+    SHELL
+  end
+
+  config.vm.define "bastion" do |bastion|
+    bastion.vm.box = "ubuntu/xenial64"
+    bastion.vm.provider "virtualbox" do |v|
+      v.name = "bastion"
+      v.memory = 1024
+      v.cpus = 1
+      v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
+    end
+    bastion.ssh.forward_agent = true
+    bastion.vm.boot_timeout = 2400
+    bastion.vm.hostname = "bastion.mc"
+    bastion.vm.network(:private_network, {:ip=>"192.168.56.202"})
+    # bastion.vm.network(:forwarded_port, {:guest=>8080, :host=>8080})
+    bastion.vm.synced_folder "../", "/etc/puppetlabs/code/environments/dev/"
+    bastion.vm.synced_folder "../keys/", "/tmp/keys/"
+    # bastion.vm.synced_folder ".", "/vagrant", type: "virtualbox"
+    # bastion.vm.provision "bastion", type: "shell", inline: <<-SHELL
+    #   bash /etc/puppetlabs/code/environments/dev/vagrant/bootstrap/bastion.sh
+    # SHELL
+  end
+
+end

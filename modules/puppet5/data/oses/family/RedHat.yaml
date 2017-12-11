@@ -1,0 +1,5 @@
+puppet5::system_config_path: '/files/etc/sysconfig'
+puppet5::package: 'puppet-agent'
+puppet5::db_package: 'puppetdb'
+puppet5::db_termini_package: 'puppetdb-termini'
+puppet5::server_package: 'puppet-server'

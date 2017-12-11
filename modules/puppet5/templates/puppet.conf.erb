@@ -1,0 +1,24 @@
+# This file is managed by Puppet, changes may be overwritten
+# These settings are set with the puppet5::config class
+#
+# This file can be used to override the default puppet settings.
+# See the following links for more details on what settings are available:
+# - https://docs.puppetlabs.com/puppet/latest/reference/config_important_settings.html
+# - https://docs.puppetlabs.com/puppet/latest/reference/config_about_settings.html
+# - https://docs.puppetlabs.com/puppet/latest/reference/config_file_main.html
+# - https://docs.puppetlabs.com/puppet/latest/reference/configuration.html
+<%- if @basemodulepath || ! @environment.empty? || ! @runinterval.empty? || ! @server.empty? -%>
+[main]
+  <%- if @basemodulepath -%>
+  basemodulepath = <%= @basemodulepath.gsub(/\s+/, "") %>
+  <%- end -%>
+  <%- unless @environment.empty? -%>
+  environment = <%= @environment %>
+  <%- end -%>
+  <%- unless @runinterval.empty? -%>
+  runinterval = <%= @runinterval %>
+  <%- end -%>
+  <%- unless @server.empty? -%>
+  server = <%= @server %>
+  <%- end -%>
+<%- end -%>

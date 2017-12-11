@@ -1,0 +1,42 @@
+# Never upload my SSH keys
+/keys
+
+
+.DS_Store
+/puppet.conf
+/sync_manifests.sh
+*.dpkg-dist
+.rvmrc
+ssl/*
+tags
+/modules/sslcerts/files/certs
+/modules/sslcerts/files/certs/*
+/manifests/classes/env.pp
+.idea
+/.vagrant
+/unicorn.conf
+/auth.conf
+/fileserver.conf
+/puppetdb.conf
+/config.ru
+/.tmp/
+*.log
+
+# Vagrant stuff
+acceptance_config.yml
+boxes/*
+/.vagrant
+/vagrant/.vagrant
+/website/.vagrant
+/website/build
+/vagrant-spec.config.rb
+
+# Bundler/Rubygems
+*.gem
+.bundle
+pkg/*
+tags
+/Gemfile.lock
+test/tmp/
+vendor/
+/exec

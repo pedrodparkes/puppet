@@ -1,0 +1,21 @@
+#!/bin/bash
+#
+# This script is intended to bootstrap Puppet5 installation on CentOS7/RHEL7 systems
+# it gets the Puppet5 repos installed, installs puppet-agent, and librarian-puppet
+# 
+# NOTE: This script requires you to relog as root to update path and environment
+#
+# Aaron Hicks <aethylred@gmail.com> 2017
+
+# Run as root!
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
+
+major_release=`rpm -qa \*-release | grep -Ei "oracle|redhat|centos" | cut -d"-" -f3`
+
+rpm -Uvh https://yum.puppetlabs.com/puppet5/puppet5-release-el-${major_release}.noarch.rpm
+yum --nogpg -y install puppet-agent
+yum install -y rubygems
+gem install librarian-puppet
